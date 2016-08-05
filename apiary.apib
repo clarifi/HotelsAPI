@@ -6,15 +6,22 @@ HOST: http://polls.apiblueprint.org/
 
 clarifi Hotel API has been designed to facilitate its customers fetch Static Hotel Content from 34 pre-integrated suppliers in clarifi.
 
-Clarifi Hotel API is a REST API and returns JSON in all its responses. 
+Clarifi’s REST APIs provide access to hotel properties from suppliers at regular intervals, this document describes the API and resources provided by API.  
 
-This document contains all the information about the Clarifi Hotels API in a language independent fashion. This includes the descriptions of the URLs and common request & header parameters used.
+The purpose of this document is to convey how to consume the Clarifi API.
 
+Clarifi API is a REST API and returns JSON in all the responses. It is based on open standards and is language agnostic.
 
-Following interactions with the Clarifi Content are available via this API:
-- Fetch all supplierHotelID’s for subscribed supplier
-- Fetch all valid hotel static content for subscribed supplier
-- Fetch all valid mappings for subscribed suppliers
+If you have any problems or requests please contact clarifi support. 
+
+Following interactions with the Clarifi Content is available via this API:
+
+ - Suppliers API : Enables the consumers with all the supplierHotelId’s for the subscribed supplier.
+ - Hotels API : Enables the consumers with all valid hotel static content for the subscribed supplier.
+ - Mappings API : Fetch all valid mappings for subscribed suppliers.
+
+If you have any problems or requests please contact support team @ clarifi@tavisca.com.
+
 
 # Overview
 When making calls to Clarifi Hotels API, you need to specify the following parameters in your call: 
@@ -30,7 +37,7 @@ When making calls to Clarifi Hotels API, you need to specify the following param
 Clarifi Hotels API access is over HTTPS, All data is sent and received as JSON.
 Clarifi Hotels API is accessible at;
 
-        http://api.clarifi.io/hotels/v1
+        http://api.clarifi.io
         
 - By default, all requests receive the v1 version of the API.
 
@@ -48,7 +55,7 @@ Clarifi Hotels API is accessible at;
         ss   = two digits of second (00 through 59)
 
 # Authentication
-Consumer must obtain a Client Code & API key from the Clarifi Support. Every consumer gets a unique Client Code and API key which will be used for authentication and authorization. Do not reveal your Clarifi Client Code and API Key to anyone.
+Consumer must obtain a Client Code & API key from the Clarifi Support. Every consumer gets a unique Client Code and API key which will be used for authentication and authorization. **_Do not reveal your Clarifi Client Code and API Key to anyone._**
 Clarifi Hotels API currently supports Basic Authentication. In order to call our API, consumers will need to pass following two values as HTTP headers for every request.
 
 - x-clarifi-clientcode
@@ -57,46 +64,65 @@ Clarifi Hotels API currently supports Basic Authentication. In order to call our
 To know more on the authentication details or how the headers needs to be added to the request please contact clarifi@tavisca.com.
 
 # Rate Limiting
-For requests to Clarifi API, you can make up to 1,000 requests per second. Requests are associated with your IP address, and not the user making requests. Note that the Search API has custom rate limit rules.
+For requests to Clarifi API, you can make up to 250 requests per second. Requests are associated with your IP address, and not the user making requests. Note that the Search API has custom rate limit rules.
 
+| Per Second   |      Per Minute      |  Per Hour |
+|:----------:|:-------------:|:------:|
+| 250 |  15000 | 900000 |
+
+    Requests are associated with your IP address, and not the ClientCode making requests.
+        
+        
 # Response Headers
-| Header        | Description          | 
-| ------------- |:-------------:|
-| X-Transaction-Id       | Unique transaction Id associated with every request and response |
+| Header          | Description          | 
+| :-------------   |:-------------:|
+| X-Transaction-Id         | Unique transaction Id associated with every request and response |
 | Date     | Response timestamp      |
 
 # Response Codes
 
 **200 OK**
     
-Standard response for successful HTTP requests. The actual response will depend on the request method used. In a GET request, the response will contain an entity corresponding to the requested resource. In a POST request, the response will contain an entity describing or containing the result of the action
-  
+Standard response for successful HTTP requests. 
+
+The actual response will depend on the request method used.
+
     HTTP/1.1 200 OK
+    {
+        "version": "1.0.0.0",
+        "isSuccess": true,
+        "statusCode": 200,
+        "transactionId": "ebc7862a-3c3d-4f35-bbdf-b8c032cc6434",
+        "clientCode": "Clarifi"
+        "result": ...
+    }
+
     
 **400 Bad Request**
 
-The server cannot or will not process the request due to an apparent client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing) 
+Sending invalid JSON in the request will result in a 400 Bad Request response
+The server cannot or will not process the request due to an apparent client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing)
 
-1. Sending invalid JSON in the request will result in a _400_ Bad Request response.
+
 
         HTTP/1.1 400 Bad Request
         {
-            "version": "1.0.0.0",
-            "isSuccess": false,
-            "statusCode": 400,
-            "transactionId": "ebc7862a-3c3d-4f35-bbdf-b8c032cc6434",
-            "clientCode": "Clarifi",
-            "errorMessage": "The request could not be understood by the server due to malformed syntax."
+         "version": "1.0.0.0",
+         "isSuccess": false,
+         "statusCode": 400,
+         "transactionId": "ebc7862a-3c3d-4f35-bbdf-b8c032cc6434",
+         "clientCode": "Clarifi",
+         "errorMessage": "The request could not be understood by the server due to malformed syntax."
         }
 
 
 **401 Unauthorized**
-Similar to 403 Forbidden, but specifically for use when authentication is required and has failed or has not yet been provided. The response must include a WWW-Authenticate header field containing a challenge applicable to the requested resource. 
 
-2. Invalid Authorization will result in a 401 UNAUTHORIZED response
+Invalid Authorization will result in a 401 UNAUTHORIZED response.
+
+Thrown when authentication is required and has failed or has not yet been provided. 
 
         HTTP/1.1 401 Unauthorized
-        
         {
             "version": "1.0.0.0",
             "isSuccess": false,
@@ -106,11 +132,14 @@ Similar to 403 Forbidden, but specifically for use when authentication is requir
             "errorMessage": "The server understood the request, but is refusing to fulfill it due to Authorization error"
         }
 
+
+
 **403 Forbidden**
+
+No Authorization in the request will result in a 403 FORBIDDEN response.
 
 The request was a valid request, but the server is refusing to respond to it. 403 error semantically means "unauthorized", i.e. the user does not have the necessary permissions for the resource.
 
-3. No Authorization in the request will result in a 403 FORBIDDEN response
 
         HTTP/1.1 403 Forbidden
         {
@@ -130,41 +159,38 @@ The requested resource could not be found but may be available in the future. Su
 
 Indicates that the request could not be processed because of conflict in the request, such as an edit conflict between multiple simultaneous updates.
 
-1. Sending invalid fields or validation issue will result in a 409 Conflict response
 
-        HTTP/1.1 409 Conflict
         {
-         "version": "1.0.0.0",
-         "isSuccess": false,
-         "statusCode": 409,
-         "transactionId": "6f11e4a0-f830-4112-bff4-8780025d6cfe",
-         "clientCode": "Clarifi",
-         "errorMessage": "Validation Failed",
-         "errors": [
-                       "GetHotelRs: ClientCode is not authorized to access the specified supplier or culture"
-                   ]
+            "version": "1.0.0.0",
+            "isSuccess": false,
+            "statusCode": 409,
+            "transactionId": "6f11e4a0-f830-4112-bff4-8780025d6cfe",
+            "clientCode": "Clarifi",
+            "errorMessage": "Validation Failed",
+            "errors": [
+            "GetHotelRs: ClientCode is not authorized to access the specified supplier or culture"
+                  ]
         }
-
-
+  
 **422 Unprocessable Entity**
 
-The request was well-formed but was unable to be followed due to semantic errors
+Sending invalid fields will result in a 422 Unprocessable Entity response.
 
-1. Sending invalid fields will result in a 422 Unprocessable Entity response.
+The request was well-formed but was unable to be followed due to semantic errors.
 
-           HTTP/1.1 422 Unprocessable Entity
-           {
-             "version": "1.0.0.0",
-             "isSuccess": false,
-             "statusCode": 422,
-             "transactionId": "6f11e4a0-f830-4112-bff4-8780025d6cfe",
-             "clientCode": "Clarifi",
-             "errorMessage": "Validation Failed",
-             "errors": [
-                       "GetHotelRs: ClientCode is not authorized to access the specified supplier or culture"
-                       ]
-            }
-            
+          HTTP/1.1 422 Unprocessable Entity
+          {
+            "version": "1.0.0.0",
+            "isSuccess": false,
+            "statusCode": 422,
+            "transactionId": "6f11e4a0-f830-4112-bff4-8780025d6cfe",
+            "clientCode": "Clarifi",
+            "errorMessage": "Validation Failed",
+            "errors": [
+            "GetHotelRs: ClientCode is not authorized to access the specified supplier or culture"
+                      ]
+          }
+ 
 **500 Internal Server Error**
 
 
@@ -184,7 +210,7 @@ You need to make a call to Hotel Feeds end point with the dateFrom as a request 
 | :-------------: |:-------------:| :-----:|
 | supplier     | Mandatory | Supplier Name for which hotels needs to be fetched |
 | fromDate     | Mandatory      |  The date from which an updates has to consumed. This field should be in the format YYYY-MM-DD for getting delta feed from desired dates.
-
+| culture     | Mandatory | Culture/Language is an optional parameter |
 **Sample Request :**
 
         {
@@ -252,3 +278,7 @@ Clarifi Hotels API helps in fetching hotels static content, however to fetch the
          "supplierHotelId"
                      ]
         }
+        
+# Mappings API
+
+# Suppliers API
