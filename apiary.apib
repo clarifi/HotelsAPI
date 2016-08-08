@@ -12,18 +12,102 @@ The purpose of this document is to convey how to consume the Clarifi API.
 
 Clarifi API is a REST API and returns JSON in all the responses. It is based on open standards and is language agnostic.
 
-If you have any problems or requests please contact clarifi support. 
 
 Following interactions with the Clarifi Content is available via this API:
 
- - Suppliers API : Enables the consumers with all the supplierHotelId’s for the subscribed supplier.
+ 
  - Hotels API : Enables the consumers with all valid hotel static content for the subscribed supplier.
- - Mappings API : Fetch all valid mappings for subscribed suppliers.
+ - Suppliers API : Enables the consumers with all the supplierHotelId’s for the subscribed supplier (coming soon)
 
 If you have any problems or requests please contact support team @ clarifi@tavisca.com.
 
+# clarifi - Hotels API Flow
 
-# Overview
+##1. **Hotels Static Content Full Feed**
+Manually provided by the Clarifi Team as the API Onboarding Process. The purpose of providing this one-time is to expedite the data consumption process and facilitate smoother onboarding for the consumers.
+
+##2. **Hotels Incremental Feed**
+You need to make a call to Hotel Feeds end point with the dateFrom as a request parameter.
+
+**End Point URI** : https://api.clarifi.io/hotels/v1
+
+**Verb** : GET
+
+| Parameter       | Required        |Description  |
+| :-------------: |:-------------:| :-----:|
+| supplier     | Mandatory | Supplier Name for which hotels needs to be fetched |
+| fromDate     | Mandatory      |  The date from which an updates has to consumed. This field should be in the format YYYY-MM-DD for getting delta feed from desired dates.
+| culture     | Mandatory | Culture/Language is an optional parameter |
+**Sample Request :**
+
+        {
+          "supplier" : "HotelsCom",
+          "fromDate" : "1997-07-16"
+        }
+
+**Request Format - Schema :**
+
+        {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+          "fromDate": {
+          "type": "string"
+         },
+          "supplier": {
+          "type": "string"
+         }
+        },
+         "required": [
+         "fromDate",
+         "supplier"
+                     ]
+        }
+
+##3. Hotel Static Content Call
+
+Use the supplier and supplierHotelId provided in the Step 2 to make the call for  Hotels Static API end point.
+
+Clarifi Hotels API helps in fetching hotels static content, however to fetch the static content consumers need to call the API in a particular order.
+
+  **End Point URI :** https://api.clarifi.io/hotels/v1
+
+  **Verb :** GET
+
+| Parameter   |      Required      |  Description |
+|:----------:|:-------------:|:------:|
+| supplier |  Mandatory | Supplier Name for which hotels needs to be fetched |
+| supplierHotelId |    Mandatory   |   Suppler Hotel Id, this is the unique id provided by the supplier to the hotel. |
+ 
+
+**Sample Request :**
+
+        {
+          "supplier" : "HotelsCom",
+          "supplierHotelId" : "493114"
+        }
+        
+**Request Format - Schema :**
+
+        {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+          "supplier": {
+          "type": "string"
+          },
+          "supplierHotelId": {
+          "type": "string"
+          }
+         },
+         "required": [
+         "supplier",
+         "supplierHotelId"
+                     ]
+        }
+        
+
+# Technical Overview - API
 When making calls to Clarifi Hotels API, you need to specify the following parameters in your call: 
    
     - JSON Body Request
@@ -79,7 +163,7 @@ For requests to Clarifi API, you can make up to 250 requests per second. Request
 | X-Transaction-Id         | Unique transaction Id associated with every request and response |
 | Date     | Response timestamp      |
 
-# Response Codes
+# Response/ Error  Codes
 
 **200 OK**
     
@@ -194,91 +278,7 @@ The request was well-formed but was unable to be followed due to semantic errors
 **500 Internal Server Error**
 
 
-# Hotels API Flow
 
-##1. **Hotels Static Content Full Feed**
-Manually provided by the Clarifi Team as the API Onboarding Process. The purpose of providing this one-time is to expedite the data consumption process and facilitate smoother onboarding for the consumers.
-
-##2. **Hotels Incremental Feed**
-You need to make a call to Hotel Feeds end point with the dateFrom as a request parameter.
-
-**End Point URI** : https://api.clarifi.io/hotels/v1
-
-**Verb** : GET
-
-| Parameter       | Required        |Description  |
-| :-------------: |:-------------:| :-----:|
-| supplier     | Mandatory | Supplier Name for which hotels needs to be fetched |
-| fromDate     | Mandatory      |  The date from which an updates has to consumed. This field should be in the format YYYY-MM-DD for getting delta feed from desired dates.
-| culture     | Mandatory | Culture/Language is an optional parameter |
-**Sample Request :**
-
-        {
-          "supplier" : "HotelsCom",
-          "fromDate" : "1997-07-16"
-        }
-
-**Request Format - Schema :**
-
-        {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-          "fromDate": {
-          "type": "string"
-         },
-          "supplier": {
-          "type": "string"
-         }
-        },
-         "required": [
-         "fromDate",
-         "supplier"
-                     ]
-        }
-
-##3. Hotel Static Content Call
-
-Use the supplier and supplierHotelId provided in the Step 2 to make the call for  Hotels Static API end point.
-
-Clarifi Hotels API helps in fetching hotels static content, however to fetch the static content consumers need to call the API in a particular order.
-
-  **End Point URI :** https://api.clarifi.io/hotels/v1
-
-  **Verb :** GET
-
-| Parameter   |      Required      |  Description |
-|:----------:|:-------------:|:------:|
-| supplier |  Mandatory | Supplier Name for which hotels needs to be fetched |
-| supplierHotelId |    Mandatory   |   Suppler Hotel Id, this is the unique id provided by the supplier to the hotel. |
- 
-
-**Sample Request :**
-
-        {
-          "supplier" : "HotelsCom",
-          "supplierHotelId" : "493114"
-        }
-        
-**Request Format - Schema :**
-
-        {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-          "supplier": {
-          "type": "string"
-          },
-          "supplierHotelId": {
-          "type": "string"
-          }
-         },
-         "required": [
-         "supplier",
-         "supplierHotelId"
-                     ]
-        }
-        
 
 # Suppliers API
 Coming Soon!!!
